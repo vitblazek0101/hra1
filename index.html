@@ -588,6 +588,18 @@
         board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
+        // 1. Generování náhodných spojů (1 = tab, -1 = slot)
+        const hJoins = []; // horizontální spoje mezi řádky
+        for (let r = 0; r < rows - 1; r++) {
+            hJoins[r] = [];
+            for (let c = 0; c < cols; c++) hJoins[r][c] = Math.random() > 0.5 ? 1 : -1;
+        }
+        const vJoins = []; // vertikální spoje mezi sloupci
+        for (let r = 0; r < rows; r++) {
+            vJoins[r] = [];
+            for (let c = 0; c < cols - 1; c++) vJoins[r][c] = Math.random() > 0.5 ? 1 : -1;
+        }
+
         const boardWidth = board.clientWidth;
         const boardHeight = boardWidth * 0.8; // Poměr 5:4
         const imgUrl = "img/dino1.jpg";
@@ -599,24 +611,49 @@
             const row = Math.floor(i / cols);
             const col = i % cols;
 
-            // Logika interlocking zámků: střídáme, který kousek má výřez (notch)
-            const hasTopNotch = (row > 0 && col % 2 === 1);
-            const hasBottomNotch = (row < rows - 1 && col % 2 === 0);
-            const hasLeftNotch = (col > 0 && row % 2 === 1);
-            const hasRightNotch = (col < cols - 1 && row % 2 === 0);
+            // Určení typu hrany pro tento konkrétní kousek
+            // r-1: join nad ním, r: join pod ním
+            // c-1: join vlevo, c: join vpravo
+            const topJoin = row === 0 ? 0 : hJoins[row - 1][col];
+            const bottomJoin = row === rows - 1 ? 0 : hJoins[row][col];
+            const leftJoin = col === 0 ? 0 : vJoins[row][col - 1];
+            const rightJoin = col === cols - 1 ? 0 : vJoins[row][col];
 
-            let p = ["0% 0%"];
+            // Konstrukce polygonu (souřadnice 0-100%)
+            // Základní čtverec je 15% - 85%, okraje jsou na 0% nebo 100%
+            let p = [];
+            const startX = col === 0 ? 0 : 15;
+            const startY = row === 0 ? 0 : 15;
+            const endX = col === cols - 1 ? 100 : 85;
+            const endY = row === rows - 1 ? 100 : 85;
+
             // Horní hrana
-            if (hasTopNotch) p.push("35% 0%", "40% 12%", "45% 15%", "55% 15%", "60% 12%", "65% 0%");
-            p.push("100% 0%");
+            p.push(`${startX}% ${startY}%`);
+            if (topJoin !== 0) {
+                const peak = topJoin === 1 ? 30 : 0; // Pokud horní kousek měl tab dolů (1), já mám slot (30)
+                p.push(`40% ${startY}%`, `45% ${peak}%`, `55% ${peak}%`, `60% ${startY}%`);
+            }
+            p.push(`${endX}% ${startY}%`);
+
             // Pravá hrana
-            if (hasRightNotch) p.push("100% 35%", "88% 40%", "85% 45%", "85% 55%", "88% 60%", "100% 65%");
-            p.push("100% 100%");
+            if (rightJoin !== 0) {
+                const peak = rightJoin === 1 ? 100 : 70; // Tab ven (100) nebo slot dovnitř (70)
+                p.push(`${endX}% 40%`, `${peak}% 45%`, `${peak}% 55%`, `${endX}% 60%`);
+            }
+            p.push(`${endX}% ${endY}%`);
+
             // Dolní hrana
-            if (hasBottomNotch) p.push("65% 100%", "60% 88%", "55% 85%", "45% 85%", "40% 88%", "35% 100%");
-            p.push("0% 100%");
+            if (bottomJoin !== 0) {
+                const peak = bottomJoin === 1 ? 100 : 70; // Tab ven (100) nebo slot dovnitř (70)
+                p.push(`60% ${endY}%`, `55% ${peak}%`, `45% ${peak}%`, `40% ${endY}%`);
+            }
+            p.push(`${startX}% ${endY}%`);
+
             // Levá hrana
-            if (hasLeftNotch) p.push("0% 65%", "12% 60%", "15% 55%", "15% 45%", "12% 40%", "0% 35%");
+            if (leftJoin !== 0) {
+                const peak = leftJoin === 1 ? 30 : 0; // Pokud levý kousek měl tab doprava (1), já mám slot (30)
+                p.push(`${startX}% 60%`, `${peak}% 55%`, `${peak}% 45%`, `${startX}% 40%`);
+            }
             
             const puzzlePath = `polygon(${p.join(", ")})`;
             
