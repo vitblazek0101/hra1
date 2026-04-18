@@ -139,6 +139,37 @@
         }
 
         .score-text { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+
+        /* Puzzle */
+        .puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            width: 500px;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid #ddd;
+            background-color: #eee;
+        }
+        .puzzle-slot {
+            width: 100px;
+            height: 100px;
+            border: 1px dashed #bbb;
+            box-sizing: border-box;
+        }
+        .puzzle-dock {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            min-height: 130px;
+            border: 1px solid #ccc;
+        }
+        .puzzle-piece { width: 100px; height: 100px; cursor: grab; flex-shrink: 0; border: 1px solid #999; }
+        .piece-correct { box-shadow: 0 0 15px 5px #4CAF50; border: 2px solid #4CAF50 !important; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -155,6 +186,7 @@
         <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ddd;">
         <h2 style="font-size: 1.2rem;">Další hry</h2>
         <button class="btn" style="background-color: #fdd835; color: black; width: 100%; border: none;" onclick="startPacman()">🕹️ Spustit PAC MAN</button>
+        <button class="btn" style="background-color: #ff9800; color: white; width: 100%; border: none; margin-top: 10px;" onclick="startPuzzle()">🧩 Spustit PUZZLE</button>
     </div>
 
     <div id="screen-game" class="screen">
@@ -174,6 +206,14 @@
         <div class="score-text">PAC MAN Skóre: <span id="pacman-score-val">0</span></div>
         <p style="font-size: 0.9rem; margin-bottom: 15px;">Ovládej šipkami na klávesnici</p>
         <canvas id="pacman-canvas" width="600" height="360" style="background: #000; border-radius: 10px; display: block; margin: 0 auto; max-width: 100%;"></canvas>
+    </div>
+
+    <div id="screen-puzzle" class="screen">
+        <button class="btn back-btn" onclick="resetGame()">← Zpět do menu</button>
+        <h2>Slož dinosaura!</h2>
+        <div id="puzzle-board" class="puzzle-board"></div>
+        <p>Táhni kousky z výběru na správné místo:</p>
+        <div id="puzzle-dock" class="puzzle-dock"></div>
     </div>
 
     <div id="screen-results" class="screen">
@@ -325,6 +365,7 @@
         stopPacman();
         document.getElementById('screen-game').classList.remove('active');
         document.getElementById('screen-pacman').classList.remove('active');
+        document.getElementById('screen-puzzle').classList.remove('active');
         document.getElementById('screen-results').classList.remove('active');
         document.getElementById('screen-menu').classList.add('active');
     }
@@ -448,6 +489,74 @@
         pacCtx.arc(pacPos.x * ts + ts/2, pacPos.y * ts + ts/2, ts/2 - 2, startAngle, endAngle);
         pacCtx.lineTo(pacPos.x * ts + ts/2, pacPos.y * ts + ts/2);
         pacCtx.fill();
+    }
+
+    // --- PUZZLE LOGIKA ---
+    function startPuzzle() {
+        document.getElementById('screen-menu').classList.remove('active');
+        document.getElementById('screen-puzzle').classList.add('active');
+        initPuzzle();
+    }
+
+    function initPuzzle() {
+        const board = document.getElementById('puzzle-board');
+        const dock = document.getElementById('puzzle-dock');
+        board.innerHTML = '';
+        dock.innerHTML = '';
+
+        const imgUrl = "https://images.unsplash.com/photo-1525833313266-936037748b44?auto=format&fit=crop&w=500&h=400";
+        const cols = 5;
+        const rows = 4;
+        const pieces = [];
+
+        for (let i = 0; i < rows * cols; i++) {
+            // Vytvoření slotu na ploše
+            const slot = document.createElement('div');
+            slot.classList.add('puzzle-slot');
+            slot.dataset.index = i;
+            slot.ondragover = (e) => e.preventDefault();
+            slot.ondrop = (e) => {
+                const pieceIndex = e.dataTransfer.getData('text');
+                if (pieceIndex == i) {
+                    const piece = document.getElementById('piece-' + pieceIndex);
+                    piece.classList.add('piece-correct');
+                    slot.appendChild(piece);
+                    checkPuzzleWin();
+                }
+            };
+            board.appendChild(slot);
+
+            // Vytvoření kousku puzzle
+            const piece = document.createElement('div');
+            piece.id = 'piece-' + i;
+            piece.classList.add('puzzle-piece');
+            piece.draggable = true;
+            piece.style.backgroundImage = `url(${imgUrl})`;
+            
+            const x = (i % cols) * 100;
+            const y = Math.floor(i / cols) * 100;
+            piece.style.backgroundPosition = `-${x}px -${y}px`;
+            
+            piece.ondragstart = (e) => {
+                e.dataTransfer.setData('text', i);
+            };
+            
+            pieces.push(piece);
+        }
+
+        // Zamíchat a vložit do spodního pole
+        pieces.sort(() => Math.random() - 0.5);
+        pieces.forEach(p => dock.appendChild(p));
+    }
+
+    function checkPuzzleWin() {
+        const placed = document.querySelectorAll('.puzzle-slot .piece-correct').length;
+        if (placed === 20) {
+            setTimeout(() => {
+                alert("Gratulujeme! Dinosaura jsi úspěšně složil.");
+                resetGame();
+            }, 500);
+        }
     }
 </script>
 
