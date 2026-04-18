@@ -160,6 +160,7 @@
         .puzzle-slot {
             box-sizing: border-box;
             background-color: #ddd;
+            overflow: visible; /* Umožní výstupkům (tabs) přečnívat do sousedních polí */
         }
         .puzzle-dock {
             display: flex;
@@ -619,40 +620,36 @@
             const leftJoin = col === 0 ? 0 : vJoins[row][col - 1];
             const rightJoin = col === cols - 1 ? 0 : vJoins[row][col];
 
-            // Konstrukce polygonu (souřadnice 0-100%)
-            // Základní čtverec je 15% - 85%, okraje jsou na 0% nebo 100%
+            // Konstrukce polygonu (souřadnice 0-100% pro základnu)
+            // Výstupky (tabs) jdou do -15% nebo 115%, výřezy (slots) do 15% nebo 85%
             let p = [];
-            const startX = col === 0 ? 0 : 15;
-            const startY = row === 0 ? 0 : 15;
-            const endX = col === cols - 1 ? 100 : 85;
-            const endY = row === rows - 1 ? 100 : 85;
 
             // Horní hrana
-            p.push(`${startX}% ${startY}%`);
+            p.push("0% 0%");
             if (topJoin !== 0) {
-                const peak = topJoin === 1 ? 30 : 0; // Pokud horní kousek měl tab dolů (1), já mám slot (30)
-                p.push(`40% ${startY}%`, `45% ${peak}%`, `55% ${peak}%`, `60% ${startY}%`);
+                const peak = topJoin === 1 ? 15 : -15; 
+                p.push(`40% 0%`, `45% ${peak}%`, `55% ${peak}%`, `60% 0%`);
             }
-            p.push(`${endX}% ${startY}%`);
+            p.push("100% 0%");
 
             // Pravá hrana
             if (rightJoin !== 0) {
-                const peak = rightJoin === 1 ? 100 : 70; // Tab ven (100) nebo slot dovnitř (70)
-                p.push(`${endX}% 40%`, `${peak}% 45%`, `${peak}% 55%`, `${endX}% 60%`);
+                const peak = rightJoin === 1 ? 115 : 85; 
+                p.push(`100% 40%`, `${peak}% 45%`, `${peak}% 55%`, `100% 60%`);
             }
-            p.push(`${endX}% ${endY}%`);
+            p.push("100% 100%");
 
             // Dolní hrana
             if (bottomJoin !== 0) {
-                const peak = bottomJoin === 1 ? 100 : 70; // Tab ven (100) nebo slot dovnitř (70)
-                p.push(`60% ${endY}%`, `55% ${peak}%`, `45% ${peak}%`, `40% ${endY}%`);
+                const peak = bottomJoin === 1 ? 115 : 85; 
+                p.push(`60% 100%`, `55% ${peak}%`, `45% ${peak}%`, `40% 100%`);
             }
-            p.push(`${startX}% ${endY}%`);
+            p.push("0% 100%");
 
             // Levá hrana
             if (leftJoin !== 0) {
-                const peak = leftJoin === 1 ? 30 : 0; // Pokud levý kousek měl tab doprava (1), já mám slot (30)
-                p.push(`${startX}% 60%`, `${peak}% 55%`, `${peak}% 45%`, `${startX}% 40%`);
+                const peak = leftJoin === 1 ? 15 : -15; 
+                p.push(`0% 60%`, `${peak}% 55%`, `${peak}% 45%`, `0% 40%`);
             }
             
             const puzzlePath = `polygon(${p.join(", ")})`;
