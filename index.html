@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poznávačka přírody a jídla</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #2196F3;
+            --bg: #f5f7fb;
+            --text: #333;
+            --white: #fff;
+            --correct: #4caf50;
+            --wrong: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 { color: var(--primary-dark); margin-bottom: 20px; }
+        h2 { color: #555; }
+
+        /* Obrazovky */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Kategorie */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .btn:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        
+        .category-btn {
+            background-color: var(--white);
+            color: #333;
+            border: 2px solid #ddd;
+        }
+        .category-btn:hover {
+            border-color: var(--primary);
+            background-color: #f9f9f9;
+            color: var(--primary-dark);
+        }
+
+        /* Hra */
+        .quiz-img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background-color: #f0f2f5;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+        .option-btn:hover { background-color: #e4e6e9; }
+        
+        .option-btn.correct { background-color: var(--correct) !important; color: white; border-color: var(--correct); }
+        .option-btn.wrong { background-color: var(--wrong) !important; color: white; border-color: var(--wrong); }
+
+        /* Progress Bar */
+        .progress-container {
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            height: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .score-text { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="screen-menu" class="screen active">
+        <h1>Poznávačka</h1>
+        <p>Vyber si kategorii a otestuj své znalosti!</p>
+        <div class="categories-grid">
+            <button class="btn category-btn" onclick="startQuiz('ptaci')">🦉 Ptáci v ČR</button>
+            <button class="btn category-btn" onclick="startQuiz('savci')">🦊 Savci v ČR</button>
+            <button class="btn category-btn" onclick="startQuiz('zelenina')">🥦 Zelenina</button>
+            <button class="btn category-btn" onclick="startQuiz('ovoce')">🍎 Ovoce</button>
+            <button class="btn category-btn" onclick="startQuiz('hmyz')">🐞 Hmyz v ČR</button>
+        </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div class="score-text">Skóre: <span id="current-score">0</span></div>
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <h2 id="question-title">Co je na obrázku?</h2>
+        <img id="quiz-image" class="quiz-img" src="" alt="Obrázek k otázce">
+        <div class="options-grid" id="options-container">
+            </div>
+    </div>
+
+    <div id="screen-results" class="screen">
+        <h1>Konec hry!</h1>
+        <h2>Tvoje celkové skóre: <span id="final-score">0</span> / <span id="total-questions">0</span></h2>
+        <p id="result-message"></p>
+        <button class="btn" style="margin-top: 20px;" onclick="resetGame()">Hrát znovu</button>
+    </div>
+</div>
+
+<script>
+    // DATA OTÁZEK (Zatím ukázka, můžeš doplňovat do 20 v každé kategorii)
+    const quizData = {
+        ptaci: [
+            { img: "https://placehold.co/400x300?text=Ptak+1", options: ["Čáp bílý", "Sýkora koňadra", "Kos černý", "Vrabec domácí"], correct: 1 },
+            { img: "https://placehold.co/400x300?text=Ptak+2", options: ["Orel mořský", "Čáp bílý", "Labuť velká", "Káně lesní"], correct: 1 },
+            { img: "https://placehold.co/400x300?text=Ptak+3", options: ["Drozd zpěvný", "Datel černý", "Kos černý", "Kukačka obecná"], correct: 2 }
+        ],
+        savci: [
+            { img: "https://placehold.co/400x300?text=Savec+1", options: ["Srnec obecný", "Liška obecná", "Jezevec lesní", "Prase divoké"], correct: 1 },
+            { img: "https://placehold.co/400x300?text=Savec+2", options: ["Rys ostrovid", "Vlk obecný", "Medvěd hnědý", "Kočka divoká"], correct: 0 }
+        ],
+        zelenina: [
+            { img: "https://placehold.co/400x300?text=Zelenina+1", options: ["Mrkev", "Brokolice", "Květák", "Okurka"], correct: 1 },
+            { img: "https://placehold.co/400x300?text=Zelenina+2", options: ["Celer", "Rajče", "Paprika", "Lilek"], correct: 3 }
+        ],
+        ovoce: [
+            { img: "https://placehold.co/400x300?text=Ovoce+1", options: ["Jablko", "Hruška", "Pomeranč", "Banan"], correct: 0 },
+            { img: "https://placehold.co/400x300?text=Ovoce+2", options: ["Jahoda", "Malina", "Borůvka", "Ostružina"], correct: 2 }
+        ],
+        hmyz: [
+            { img: "https://placehold.co/400x300?text=Hmyz+1", options: ["Mravenec", "Včela medonosná", "Vosa obecná", "Čmelák"], correct: 1 },
+            { img: "https://placehold.co/400x300?text=Hmyz+2", options: ["Slunéčko sedmitečné", "Mandelinka bramborová", "Roháč obecný", "Zlatohlávek"], correct: 0 }
+        ]
+    };
+
+    let currentCategory = '';
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function startQuiz(category) {
+        currentCategory = category;
+        currentQuestionIndex = 0;
+        score = 0;
+        
+        document.getElementById('screen-menu').classList.remove('active');
+        document.getElementById('screen-game').classList.add('active');
+        
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        answered = false;
+        const questions = quizData[currentCategory];
+        const currentQuestion = questions[currentQuestionIndex];
+        
+        // Aktualizace UI
+        document.getElementById('current-score').textContent = score;
+        document.getElementById('quiz-image').src = currentQuestion.img;
+        
+        const progressPercent = (currentQuestionIndex / questions.length) * 100;
+        document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        // Vygenerování tlačítek odpovědí
+        currentQuestion.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.classList.add('btn', 'option-btn');
+            btn.textContent = option;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIndex, buttonElement) {
+        if (answered) return; // Zamezí klikání na více tlačítek
+        answered = true;
+
+        const questions = quizData[currentCategory];
+        const correctIndex = questions[currentQuestionIndex].correct;
+        const buttons = document.querySelectorAll('.option-btn');
+
+        if (selectedIndex === correctIndex) {
+            score++;
+            buttonElement.classList.add('correct');
+        } else {
+            buttonElement.classList.add('wrong');
+            buttons[correctIndex].classList.add('correct'); // Ukáže správnou odpověď
+        }
+
+        document.getElementById('current-score').textContent = score;
+
+        // Počkáme 1.5 sekundy a přepneme na další otázku
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }, 1500);
+    }
+
+    function showResults() {
+        document.getElementById('screen-game').classList.remove('active');
+        document.getElementById('screen-results').classList.add('active');
+        
+        const total = quizData[currentCategory].length;
+        document.getElementById('final-score').textContent = score;
+        document.getElementById('total-questions').textContent = total;
+        
+        const messageEl = document.getElementById('result-message');
+        const percentage = (score / total) * 100;
+        
+        if (percentage === 100) messageEl.textContent = "Perfektní! Jsi naprostý mistr! 🏆";
+        else if (percentage >= 70) messageEl.textContent = "Skvělá práce! Máš výborný přehled. 👍";
+        else if (percentage >= 40) messageEl.textContent = "Dobrá snaha, ale ještě je co zlepšovat. 😉";
+        else messageEl.textContent = "To se moc nepovedlo. Zkus to znovu! 📚";
+    }
+
+    function resetGame() {
+        document.getElementById('screen-results').classList.remove('active');
+        document.getElementById('screen-menu').classList.add('active');
+    }
+</script>
+
+</body>
+</html>
