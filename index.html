@@ -143,8 +143,6 @@
         /* Puzzle */
         .puzzle-board {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(4, 1fr);
             gap: 0;
             position: relative;
             width: 500px;
@@ -154,8 +152,6 @@
             background-color: #eee;
         }
         .puzzle-slot {
-            width: 100px;
-            height: 100px;
             box-sizing: border-box;
             background-color: #ddd;
         }
@@ -170,8 +166,6 @@
             border: 1px solid #ccc;
         }
         .puzzle-piece { 
-            width: 100px; 
-            height: 100px; 
             cursor: grab; 
             flex-shrink: 0; 
             transition: transform 0.2s;
@@ -222,6 +216,17 @@
         <h2 style="font-size: 1.2rem;">Další hry</h2>
         <button class="btn" style="background-color: #fdd835; color: black; width: 100%; border: none;" onclick="startPacman()">🕹️ Spustit PAC MAN</button>
         <button class="btn" style="background-color: #ff9800; color: white; width: 100%; border: none; margin-top: 10px;" onclick="startPuzzle()">🧩 Spustit PUZZLE</button>
+    </div>
+
+    <div id="screen-puzzle-select" class="screen">
+        <button class="btn back-btn" onclick="resetGame()">← Zpět do menu</button>
+        <h1>Vyber si obtížnost</h1>
+        <div class="categories-grid">
+            <button class="btn category-btn" onclick="initPuzzle(3, 2)">👶 3x2 (6 dílků)</button>
+            <button class="btn category-btn" onclick="initPuzzle(6, 5)">🟢 6x5 (30 dílků)</button>
+            <button class="btn category-btn" onclick="initPuzzle(10, 9)">🟠 10x9 (90 dílků)</button>
+            <button class="btn category-btn" onclick="initPuzzle(20, 19)">🔥 20x19 (380 dílků)</button>
+        </div>
     </div>
 
     <div id="screen-game" class="screen">
@@ -404,6 +409,7 @@
         document.getElementById('screen-game').classList.remove('active');
         document.getElementById('screen-pacman').classList.remove('active');
         document.getElementById('screen-puzzle').classList.remove('active');
+        document.getElementById('screen-puzzle-select').classList.remove('active');
         document.getElementById('screen-results').classList.remove('active');
         document.getElementById('screen-menu').classList.add('active');
     }
@@ -532,19 +538,27 @@
     // --- PUZZLE LOGIKA ---
     function startPuzzle() {
         document.getElementById('screen-menu').classList.remove('active');
-        document.getElementById('screen-puzzle').classList.add('active');
-        initPuzzle();
+        document.getElementById('screen-puzzle-select').classList.add('active');
     }
 
-    function initPuzzle() {
+    let puzzleTargetCount = 0;
+
+    function initPuzzle(cols, rows) {
+        document.getElementById('screen-puzzle-select').classList.remove('active');
+        document.getElementById('screen-puzzle').classList.add('active');
+        
         const board = document.getElementById('puzzle-board');
         const dock = document.getElementById('puzzle-dock');
         board.innerHTML = '<div id="puzzle-hint-overlay" class="puzzle-hint-overlay"></div>';
         dock.innerHTML = '';
 
+        puzzleTargetCount = cols * rows;
+        board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
         const imgUrl = "img/dino1.jpg";
-        const cols = 5;
-        const rows = 4;
+        const pieceWidth = 500 / cols;
+        const pieceHeight = 400 / rows;
         const pieces = [];
 
         for (let i = 0; i < rows * cols; i++) {
@@ -563,6 +577,8 @@
             // Vytvoření slotu na ploše
             const slot = document.createElement('div');
             slot.classList.add('puzzle-slot');
+            slot.style.width = pieceWidth + "px";
+            slot.style.height = pieceHeight + "px";
             slot.style.clipPath = puzzlePath;
             if ((row + col) % 2 === 0) slot.style.backgroundColor = '#d0d0d0'; // Mírné střídání barev slotů
             slot.dataset.index = i;
@@ -582,14 +598,16 @@
             const piece = document.createElement('div');
             piece.id = 'piece-' + i;
             piece.classList.add('puzzle-piece');
+            piece.style.width = pieceWidth + "px";
+            piece.style.height = pieceHeight + "px";
             piece.style.clipPath = puzzlePath;
             piece.draggable = true;
             piece.style.backgroundImage = `url(${imgUrl})`;
             piece.style.backgroundSize = "500px 400px";
             
-            const x = (i % cols) * 100;
-            const y = Math.floor(i / cols) * 100;
-            piece.style.backgroundPosition = `-${x}px -${y}px`;
+            const xPos = col * pieceWidth;
+            const yPos = row * pieceHeight;
+            piece.style.backgroundPosition = `-${xPos}px -${yPos}px`;
             
             piece.ondragstart = (e) => {
                 e.dataTransfer.setData('text', i);
@@ -640,7 +658,7 @@
 
     function checkPuzzleWin() {
         const placed = document.querySelectorAll('.puzzle-slot .piece-correct').length;
-        if (placed === 20) {
+        if (placed === puzzleTargetCount) {
             triggerConfetti();
             setTimeout(() => {
                 alert("Gratulujeme! Dinosaura jsi úspěšně složil.");
