@@ -163,14 +163,16 @@
         }
         .puzzle-dock {
             display: flex;
-            overflow-x: auto;
-            gap: 15px;
-            padding: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            overflow-y: auto;
+            gap: 10px;
+            padding: 15px;
             background: #f0f0f0;
             border-radius: 10px;
-            min-height: 130px;
+            max-height: 250px;
             border: 1px solid #ccc;
-            touch-action: pan-x;
+            touch-action: pan-y;
         }
         .puzzle-piece { 
             cursor: grab; 
@@ -597,14 +599,26 @@
             const row = Math.floor(i / cols);
             const col = i % cols;
 
-            // Tvary bez mezer: Rohy jsou na 0% a 100%. 
-            // Vnitřní hrany střídají rovinu (0/100) a výřez (15/85), které se navzájem překryjí.
-            const topMid = row === 0 ? "50% 0%" : (row % 2 === 1 ? "50% 15%" : "50% 0%");
-            const bottomMid = row === rows - 1 ? "50% 100%" : (row % 2 === 0 ? "50% 85%" : "50% 100%");
-            const leftMid = col === 0 ? "0% 50%" : (col % 2 === 1 ? "15% 50%" : "0% 50%");
-            const rightMid = col === cols - 1 ? "100% 50%" : (col % 2 === 0 ? "85% 50%" : "100% 50%");
+            // Logika interlocking zámků: střídáme, který kousek má výřez (notch)
+            const hasTopNotch = (row > 0 && col % 2 === 1);
+            const hasBottomNotch = (row < rows - 1 && col % 2 === 0);
+            const hasLeftNotch = (col > 0 && row % 2 === 1);
+            const hasRightNotch = (col < cols - 1 && row % 2 === 0);
 
-            const puzzlePath = `polygon(0% 0%, 45% 0%, ${topMid}, 55% 0%, 100% 0%, 100% 45%, ${rightMid}, 100% 55%, 100% 100%, 55% 100%, ${bottomMid}, 45% 100%, 0% 100%, 0% 55%, ${leftMid}, 0% 45%)`;
+            let p = ["0% 0%"];
+            // Horní hrana
+            if (hasTopNotch) p.push("35% 0%", "40% 12%", "45% 15%", "55% 15%", "60% 12%", "65% 0%");
+            p.push("100% 0%");
+            // Pravá hrana
+            if (hasRightNotch) p.push("100% 35%", "88% 40%", "85% 45%", "85% 55%", "88% 60%", "100% 65%");
+            p.push("100% 100%");
+            // Dolní hrana
+            if (hasBottomNotch) p.push("65% 100%", "60% 88%", "55% 85%", "45% 85%", "40% 88%", "35% 100%");
+            p.push("0% 100%");
+            // Levá hrana
+            if (hasLeftNotch) p.push("0% 65%", "12% 60%", "15% 55%", "15% 45%", "12% 40%", "0% 35%");
+            
+            const puzzlePath = `polygon(${p.join(", ")})`;
             
             // Vytvoření slotu na ploše
             const slot = document.createElement('div');
