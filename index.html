@@ -145,7 +145,8 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             grid-template-rows: repeat(4, 1fr);
-            gap: 2px;
+            gap: 0;
+            position: relative;
             width: 500px;
             height: 400px;
             margin: 20px auto;
@@ -155,8 +156,8 @@
         .puzzle-slot {
             width: 100px;
             height: 100px;
-            border: 1px dashed #bbb;
             box-sizing: border-box;
+            background-color: #ddd;
         }
         .puzzle-dock {
             display: flex;
@@ -168,8 +169,42 @@
             min-height: 130px;
             border: 1px solid #ccc;
         }
-        .puzzle-piece { width: 100px; height: 100px; cursor: grab; flex-shrink: 0; border: 1px solid #999; }
-        .piece-correct { box-shadow: 0 0 15px 5px #4CAF50; border: 2px solid #4CAF50 !important; pointer-events: none; }
+        .puzzle-piece { 
+            width: 100px; 
+            height: 100px; 
+            cursor: grab; 
+            flex-shrink: 0; 
+            transition: transform 0.2s;
+        }
+        .puzzle-piece:active { transform: scale(1.1); z-index: 100; }
+        
+        .piece-correct { 
+            filter: drop-shadow(0 0 5px #4CAF50);
+            pointer-events: none; 
+        }
+
+        .puzzle-slot { border: none !important; }
+
+        /* Nápověda pro puzzle */
+        .puzzle-hint-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('img/dino1.jpg');
+            background-size: 500px 400px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 5;
+        }
+
+        /* Konfety canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
@@ -210,6 +245,7 @@
 
     <div id="screen-puzzle" class="screen">
         <button class="btn back-btn" onclick="resetGame()">← Zpět do menu</button>
+        <button class="btn" style="background-color: #9c27b0; margin-bottom: 15px; padding: 8px 15px; font-size: 14px; margin-left: 10px;" onclick="showPuzzleHint()">💡 Nápověda</button>
         <h2>Slož dinosaura!</h2>
         <div id="puzzle-board" class="puzzle-board"></div>
         <p>Táhni kousky z výběru na správné místo:</p>
@@ -222,6 +258,8 @@
         <p id="result-message"></p>
         <button class="btn" style="margin-top: 20px;" onclick="resetGame()">Hrát znovu</button>
     </div>
+
+    <canvas id="confetti-canvas"></canvas>
 </div>
 
 <script>
@@ -501,7 +539,7 @@
     function initPuzzle() {
         const board = document.getElementById('puzzle-board');
         const dock = document.getElementById('puzzle-dock');
-        board.innerHTML = '';
+        board.innerHTML = '<div id="puzzle-hint-overlay" class="puzzle-hint-overlay"></div>';
         dock.innerHTML = '';
 
         const imgUrl = "img/dino1.jpg";
@@ -510,9 +548,23 @@
         const pieces = [];
 
         for (let i = 0; i < rows * cols; i++) {
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+
+            // Tvary bez mezer: Rohy jsou na 0% a 100%. 
+            // Vnitřní hrany střídají rovinu (0/100) a výřez (15/85), které se navzájem překryjí.
+            const topMid = row === 0 ? "50% 0%" : (row % 2 === 1 ? "50% 15%" : "50% 0%");
+            const bottomMid = row === rows - 1 ? "50% 100%" : (row % 2 === 0 ? "50% 85%" : "50% 100%");
+            const leftMid = col === 0 ? "0% 50%" : (col % 2 === 1 ? "15% 50%" : "0% 50%");
+            const rightMid = col === cols - 1 ? "100% 50%" : (col % 2 === 0 ? "85% 50%" : "100% 50%");
+
+            const puzzlePath = `polygon(0% 0%, 45% 0%, ${topMid}, 55% 0%, 100% 0%, 100% 45%, ${rightMid}, 100% 55%, 100% 100%, 55% 100%, ${bottomMid}, 45% 100%, 0% 100%, 0% 55%, ${leftMid}, 0% 45%)`;
+            
             // Vytvoření slotu na ploše
             const slot = document.createElement('div');
             slot.classList.add('puzzle-slot');
+            slot.style.clipPath = puzzlePath;
+            if ((row + col) % 2 === 0) slot.style.backgroundColor = '#d0d0d0'; // Mírné střídání barev slotů
             slot.dataset.index = i;
             slot.ondragover = (e) => e.preventDefault();
             slot.ondrop = (e) => {
@@ -530,6 +582,7 @@
             const piece = document.createElement('div');
             piece.id = 'piece-' + i;
             piece.classList.add('puzzle-piece');
+            piece.style.clipPath = puzzlePath;
             piece.draggable = true;
             piece.style.backgroundImage = `url(${imgUrl})`;
             piece.style.backgroundSize = "500px 400px";
@@ -550,14 +603,59 @@
         pieces.forEach(p => dock.appendChild(p));
     }
 
+    // --- KONFETY LOGIKA ---
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let particles = [];
+
+    function triggerConfetti() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+        particles = [];
+        for (let i = 0; i < 150; i++) {
+            particles.push({
+                x: Math.random() * confettiCanvas.width,
+                y: -20,
+                r: Math.random() * 8 + 4,
+                color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                vx: Math.random() * 4 - 2,
+                vy: Math.random() * 5 + 2
+            });
+        }
+        animateConfetti();
+    }
+
+    function animateConfetti() {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        let active = false;
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.y < confettiCanvas.height) active = true;
+            confettiCtx.fillStyle = p.color;
+            confettiCtx.fillRect(p.x, p.y, p.r, p.r);
+        });
+        if (active) requestAnimationFrame(animateConfetti);
+    }
+
     function checkPuzzleWin() {
         const placed = document.querySelectorAll('.puzzle-slot .piece-correct').length;
         if (placed === 20) {
+            triggerConfetti();
             setTimeout(() => {
                 alert("Gratulujeme! Dinosaura jsi úspěšně složil.");
                 resetGame();
             }, 500);
         }
+    }
+
+    function showPuzzleHint() {
+        const overlay = document.getElementById('puzzle-hint-overlay');
+        if (!overlay) return;
+        overlay.style.opacity = "0.4";
+        setTimeout(() => {
+            overlay.style.opacity = "0";
+        }, 2000);
     }
 </script>
 
