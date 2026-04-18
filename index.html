@@ -622,10 +622,6 @@
             // Konstrukce polygonu (souřadnice 0-100%)
             // Základní čtverec je 15% - 85%, okraje jsou na 0% nebo 100%
             let p = [];
-            const startX = col === 0 ? 0 : 15;
-            const startY = row === 0 ? 0 : 15;
-            const endX = col === cols - 1 ? 100 : 85;
-            const endY = row === rows - 1 ? 100 : 85;
             const startX = col === 0 ? 0 : 5;
             const startY = row === 0 ? 0 : 5;
             const endX = col === cols - 1 ? 100 : 95;
@@ -634,7 +630,6 @@
             // Horní hrana
             p.push(`${startX}% ${startY}%`);
             if (topJoin !== 0) {
-                const peak = topJoin === 1 ? 30 : 0; 
                 const peak = topJoin === 1 ? 15 : 0; 
                 p.push(`40% ${startY}%`, `45% ${peak}%`, `55% ${peak}%`, `60% ${startY}%`);
             }
@@ -642,7 +637,6 @@
 
             // Pravá hrana
             if (rightJoin !== 0) {
-                const peak = rightJoin === 1 ? 100 : 70; 
                 const peak = rightJoin === 1 ? 100 : 85; 
                 p.push(`${endX}% 40%`, `${peak}% 45%`, `${peak}% 55%`, `${endX}% 60%`);
             }
@@ -650,7 +644,6 @@
 
             // Dolní hrana
             if (bottomJoin !== 0) {
-                const peak = bottomJoin === 1 ? 100 : 70; 
                 const peak = bottomJoin === 1 ? 100 : 85; 
                 p.push(`60% ${endY}%`, `55% ${peak}%`, `45% ${peak}%`, `40% ${endY}%`);
             }
@@ -658,7 +651,6 @@
 
             // Levá hrana
             if (leftJoin !== 0) {
-                const peak = leftJoin === 1 ? 30 : 0; 
                 const peak = leftJoin === 1 ? 15 : 0; 
                 p.push(`${startX}% 60%`, `${peak}% 55%`, `${peak}% 45%`, `${startX}% 40%`);
             }
