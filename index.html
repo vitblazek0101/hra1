@@ -621,47 +621,40 @@
             const leftJoin = col === 0 ? 0 : vJoins[row][col - 1];
             const rightJoin = col === cols - 1 ? 0 : vJoins[row][col];
 
-            // Konstrukce polygonu (souřadnice 0-100%)
-            // Základní čtverec je 5% - 95%, zámky jsou výraznější (0% / 100% a hloubka 15%)
-            let p = [];2.
-            const startX = col === 0 ? 0 : 2.5;
-            const startY = row === 0 ? 0 : 5;7.
-            const endX = col === cols - 1 ? 100 : 97.5;
-            const endY = row === rows - 1 ? 100 : 95;
-            const startX = col === 0 ? 0 : 2.5;
-            const startY = row === 0 ? 0 : 2.5;
-            const endX = col === cols - 1 ? 100 : 97.5;
-            const endY = row === rows - 1 ? 122.0 : -7.57.5;22.-7.5
+            // Konstrukce polygonu (souřadnice 0-100% pro základnu)
+            // Výstupky a výřezy jsou nyní symetrické a mnohem větší (překrývají se)
+            let p = [];
+            const startX = col === 0 ? 0 : 1.25;
+            const startY = row === 0 ? 0 : 1.25;
+            const endX = col === cols - 1 ? 100 : 98.75;
+            const endY = row === rows - 1 ? 100 : 98.75;
+            const d = 20; // hloubka zámku
 
             // Horní hrana
             p.push(`${startX}% ${startY}%`);
             if (topJoin !== 0) {
-                const peak = topJoin === 1 ? 15 : 0; // Pokud má soused tab (1), já mám slot (15). Jinak já tab (0).
-                const peak = topJoin === 1 ? 22.5 : -7.5; // Pokud má soused tab (1), já mám slot (22.5). Jinak já tab (-7.5).
-                p.push(`40% ${startY}%`, `45% ${e7.5ak}77.`, `55% ${peak}`7.5, `60% ${startY}77.`);
+                const peak = topJoin === 1 ? d : -d; 
+                p.push(`40% ${startY}%`, `45% ${peak}%`, `55% ${peak}%`, `60% ${startY}%`);
             }
             p.push(`${endX}% ${startY}%`);
 
             // Pravá hrana
             if (rightJoin !== 0) {
-                const peak = rightJoin === 1 ? 100 : 85; // Já tab (100) nebo já slot (85)
-                const peak = rightJoin === 1 ? 10.7.55 :77.77.5; // Já tab(7.5107.5) nebo já s77.ot (77.5)
+                const peak = rightJoin === 1 ? 100 + d : 100 - d; 
                 p.push(`${endX}% 40%`, `${peak}% 45%`, `${peak}% 55%`, `${endX}% 60%`);
             }
             p.push(`${endX}% ${endY}%`);
 
             // Dolní hrana
             if (bottomJoin !== 0) {
-                const peak = bottomJoin === 1 22. 100-7.5: 85; // Já tab (100) nebo já slot (85)22.-7.5
-                const peak = bottomJoin === 1 ? 107.5 : 77.5; // Já tab (107.5) nebo já slot (77.5)
+                const peak = bottomJoin === 1 ? 100 + d : 100 - d; 
                 p.push(`60% ${endY}%`, `55% ${peak}%`, `45% ${peak}%`, `40% ${endY}%`);
             }
             p.push(`${startX}% ${endY}%`);
 
             // Levá hrana
             if (leftJoin !== 0) {
-                const peak = leftJoin === 1 ? 15 : 0; // Pokud má soused tab (1), já mám slot (15). Jinak já tab (0).
-                const peak = leftJoin === 1 ? 22.5 : -7.5; // Pokud má soused tab (1), já mám slot (22.5). Jinak já tab (-7.5).
+                const peak = leftJoin === 1 ? d : -d; 
                 p.push(`${startX}% 60%`, `${peak}% 55%`, `${peak}% 45%`, `${startX}% 40%`);
             }
             
