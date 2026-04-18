@@ -142,11 +142,7 @@
         <h1>Poznávačka</h1>
         <p>Vyber si kategorii a otestuj své znalosti!</p>
         <div class="categories-grid">
-            <button class="btn category-btn" onclick="startQuiz('ptaci')">🦉 Ptáci v ČR</button>
-            <button class="btn category-btn" onclick="startQuiz('savci')">🦊 Savci v ČR</button>
-            <button class="btn category-btn" onclick="startQuiz('zelenina')">🥦 Zelenina</button>
-            <button class="btn category-btn" onclick="startQuiz('ovoce')">🍎 Ovoce</button>
-            <button class="btn category-btn" onclick="startQuiz('hmyz')">🐞 Hmyz v ČR</button>
+            <button class="btn category-btn" style="grid-column: span 2;" onclick="startQuiz('ptaci')">🦉 Ptáci v ČR</button>
         </div>
     </div>
 
@@ -174,64 +170,16 @@
     // DATA OTÁZEK (Zatím ukázka, můžeš doplňovat do 20 v každé kategorii)
     const quizData = {
         ptaci: [
-            { img: "https://loremflickr.com/400/300/great-tit,bird", options: ["Čáp bílý", "Sýkora koňadra", "Kos černý", "Vrabec domácí"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/stork", options: ["Orel mořský", "Čáp bílý", "Labuť velká", "Káně lesní"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/blackbird", options: ["Drozd zpěvný", "Datel černý", "Kos černý", "Kukačka obecná"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/sparrow", options: ["Pěnkava obecná", "Vrabec domácí", "Strnad obecný", "Dlask tlustozobý"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/kingfisher", options: ["Ledňáček říční", "Rybák obecný", "Břehule říční", "Potápka roháč"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/swan", options: ["Husa velká", "Kachna divoká", "Labuť velká", "Lyska černá"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/kestrel", options: ["Jestřáb lesní", "Poštolka obecná", "Sokol stěhovavý", "Moták pochop"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/swallow,bird", options: ["Jiřička obecná", "Vlaštovka obecná", "Rorýs obecný", "Lejsek šedý"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/woodpecker", options: ["Strakapoud velký", "Žluna zelená", "Brhlík lesní", "Šoupálek krátkoprstý"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/eagle-owl", options: ["Puštík obecný", "Kalous ušatý", "Sýček obecný", "Výr velký"], correct: 3 }
-        ],
-        savci: [
-            { img: "https://loremflickr.com/400/300/fox", options: ["Srnec obecný", "Liška obecná", "Jezevec lesní", "Prase divoké"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/lynx", options: ["Rys ostrovid", "Vlk obecný", "Medvěd hnědý", "Kočka divoká"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/deer", options: ["Jelen evropský", "Daněk skvrnitý", "Muflon", "Los evropský"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/badger", options: ["Kuna skalní", "Tchoř tmavý", "Jezevec lesní", "Vydra říční"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/wild-boar", options: ["Prase divoké", "Medvěd hnědý", "Býk", "Zubr"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/squirrel", options: ["Plch velký", "Veverka obecná", "Křeček polní", "Myšice lesní"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/hare", options: ["Králík divoký", "Zajíc polní", "Morče", "Nutrie"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/wolf", options: ["Pes domácí", "Vlk obecný", "Šakal obecný", "Hyena"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/hedgehog", options: ["Ježek západní", "Krtek obecný", "Rejsek malý", "Bodlín"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/beaver", options: ["Ondatra pižmová", "Bobr evropský", "Nutrie říční", "Vydra říční"], correct: 1 }
-        ],
-        zelenina: [
-            { img: "https://loremflickr.com/400/300/broccoli", options: ["Mrkev", "Brokolice", "Květák", "Okurka"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/eggplant", options: ["Celer", "Rajče", "Paprika", "Lilek"], correct: 3 },
-            { img: "https://loremflickr.com/400/300/carrot", options: ["Mrkev", "Petržel", "Pastinák", "Celer"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/bell-pepper", options: ["Chilli", "Kapie", "Paprika", "Fazolky"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/tomato", options: ["Třešeň", "Rajče", "Šípky", "Jeřabiny"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/cucumber", options: ["Cuketa", "Lilek", "Okurka", "Dýně"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/cauliflower", options: ["Květák", "Brokolice", "Zelí", "Kedluben"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/onion", options: ["Pórek", "Cibule", "Česnek", "Šalotka"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/garlic", options: ["Zázvor", "Křen", "Česnek", "Cibule"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/potatoes", options: ["Batáty", "Brambory", "Topinambury", "Řepa"], correct: 1 }
-        ],
-        ovoce: [
-            { img: "https://loremflickr.com/400/300/apple", options: ["Jablko", "Hruška", "Pomeranč", "Banan"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/blueberry", options: ["Jahoda", "Malina", "Borůvka", "Ostružina"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/pear", options: ["Kdoule", "Hruška", "Fík", "Avokádo"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/strawberry", options: ["Jahoda", "Malina", "Brusinka", "Třešeň"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/raspberry", options: ["Ostružina", "Malina", "Moruše", "Borůvka"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/cherry", options: ["Višeň", "Třešeň", "Švestka", "Trnka"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/plum", options: ["Švestka", "Blůma", "Ringle", "Fík"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/apricot", options: ["Meruňka", "Broskev", "Nektarinka", "Mango"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/peach", options: ["Broskev", "Meruňka", "Pomeranč", "Papája"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/red-currant", options: ["Rybíz", "Borůvka", "Angrešt", "Bezinky"], correct: 0 }
-        ],
-        hmyz: [
-            { img: "https://loremflickr.com/400/300/honey-bee", options: ["Mravenec", "Včela medonosná", "Vosa obecná", "Čmelák"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/ladybug", options: ["Slunéčko sedmitečné", "Mandelinka bramborová", "Roháč obecný", "Zlatohlávek"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/ant", options: ["Termit", "Včela", "Mravenec lesní", "Pavouk"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/butterfly", options: ["Bělásek", "Babočka paví oko", "Modrásek", "Žluťásek"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/wasp", options: ["Včela", "Sršeň", "Vosa obecná", "Čmelák"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/stag-beetle", options: ["Chrobák", "Roháč obecný", "Střevlík", "Vruboun"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/grasshopper", options: ["Kobylka zelená", "Cvrček", "Saranče", "Modlivka"], correct: 0 },
-            { img: "https://loremflickr.com/400/300/cricket-insect", options: ["Šváb", "Cvrček polní", "Mravenec", "Cvrčivec"], correct: 1 },
-            { img: "https://loremflickr.com/400/300/mosquito", options: ["Moucha", "Ovád", "Komár písklavý", "Tiplice"], correct: 2 },
-            { img: "https://loremflickr.com/400/300/bumblebee", options: ["Včela", "Čmelák zemní", "Vosa", "Sršeň"], correct: 1 }
+            { img: "img/sykora-konadra.jpg", options: ["Čáp bílý", "Sýkora koňadra", "Kos černý", "Datel černý"], correct: 1 },
+            { img: "img/cap-bily.jpg", options: ["Orel mořský", "Čáp bílý", "Labuť velká", "Káně lesní"], correct: 1 },
+            { img: "img/kos-cerny.jpg", options: ["Drozd zpěvný", "Datel černý", "Kos černý", "Kukačka obecná"], correct: 2 },
+            { img: "img/datel-cerny.jpg", options: ["Pěnkava obecná", "Datel černý", "Strnad obecný", "Dlask tlustozobý"], correct: 1 },
+            { img: "img/lednacek-ricni.jpg", options: ["Ledňáček říční", "Rybák obecný", "Břehule říční", "Potápka roháč"], correct: 0 },
+            { img: "img/labut-velka.jpg", options: ["Husa velká", "Kachna divoká", "Labuť velká", "Lyska černá"], correct: 2 },
+            { img: "img/postolka-obecna.jpg", options: ["Jestřáb lesní", "Poštolka obecná", "Sokol stěhovavý", "Moták pochop"], correct: 1 },
+            { img: "img/vlastovka-obecna.jpg", options: ["Jiřička obecná", "Vlaštovka obecná", "Rorýs obecný", "Lejsek šedý"], correct: 1 },
+            { img: "img/strakapoud-velky.jpg", options: ["Strakapoud velký", "Žluna zelená", "Brhlík lesní", "Šoupálek krátkoprstý"], correct: 0 },
+            { img: "img/vyr-velky.jpg", options: ["Puštík obecný", "Kalous ušatý", "Sýček obecný", "Výr velký"], correct: 3 }
         ]
     };
 
