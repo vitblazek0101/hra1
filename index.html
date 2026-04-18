@@ -176,6 +176,7 @@
             cursor: grab; 
             flex-shrink: 0; 
             transition: transform 0.2s;
+            backface-visibility: hidden; /* Pomáhá plynulosti na iOS */
             touch-action: none; /* Důležité pro mobilní drag */
         }
         .puzzle-piece:active { transform: scale(1.1); z-index: 100; }
@@ -651,6 +652,8 @@
             const slot = document.querySelectorAll('.puzzle-slot')[slotIndex];
             piece.classList.add('piece-correct');
             piece.style.position = "static";
+            piece.style.left = "auto";
+            piece.style.top = "auto";
             piece.style.transform = "none";
             slot.appendChild(piece);
             checkPuzzleWin();
@@ -661,31 +664,50 @@
         piece.addEventListener('touchstart', (e) => {
             if (piece.classList.contains('piece-correct')) return;
             const touch = e.touches[0];
-            piece.dataset.startX = touch.clientX;
-            piece.dataset.startY = touch.clientY;
-            piece.style.zIndex = "1000";
+            const rect = piece.getBoundingClientRect();
+            
+            // Uložíme si, kde přesně jsme dílek chytili (offset)
+            piece.dataset.offsetX = touch.clientX - rect.left;
+            piece.dataset.offsetY = touch.clientY - rect.top;
+            
+            // Přepneme na fixed pozici, aby dílek mohl "létat" nad celou stránkou
+            piece.style.width = rect.width + "px";
+            piece.style.height = rect.height + "px";
+            piece.style.position = "fixed";
+            piece.style.left = rect.left + "px";
+            piece.style.top = rect.top + "px";
+            piece.style.zIndex = "10000";
+            piece.style.transform = "scale(1.1)";
         }, { passive: false });
 
         piece.addEventListener('touchmove', (e) => {
             if (piece.classList.contains('piece-correct')) return;
             e.preventDefault();
             const touch = e.touches[0];
-            const dx = touch.clientX - piece.dataset.startX;
-            const dy = touch.clientY - piece.dataset.startY;
-            piece.style.transform = `translate(${dx}px, ${dy}px) scale(1.1)`;
+            
+            // Aktualizujeme pozici podle pohybu prstu
+            piece.style.left = (touch.clientX - piece.dataset.offsetX) + "px";
+            piece.style.top = (touch.clientY - piece.dataset.offsetY) + "px";
         }, { passive: false });
 
         piece.addEventListener('touchend', (e) => {
             if (piece.classList.contains('piece-correct')) return;
-            piece.style.zIndex = "";
             const touch = e.changedTouches[0];
+            
+            // Trik: Na moment dílek skryjeme, abychom zjistili, co je pod ním
+            piece.style.visibility = 'hidden';
             const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+            piece.style.visibility = 'visible';
+            
             const slot = elementUnder ? elementUnder.closest('.puzzle-slot') : null;
             
             if (slot && slot.dataset.index == index) {
                 handlePuzzleDrop(index, index);
             } else {
+                // Vracíme dílek zpět do docku
+                piece.style.position = "static";
                 piece.style.transform = "none";
+                piece.style.zIndex = "";
             }
         });
     }
