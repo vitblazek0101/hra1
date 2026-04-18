@@ -148,7 +148,8 @@
         <h1>Poznávačka</h1>
         <p>Vyber si kategorii a otestuj své znalosti!</p>
         <div class="categories-grid">
-            <button class="btn category-btn" style="grid-column: span 2;" onclick="startQuiz('ptaci')">🦉 Ptáci v ČR</button>
+            <button class="btn category-btn" onclick="startQuiz('ptaci')">🦉 Ptáci v ČR</button>
+            <button class="btn category-btn" onclick="startQuiz('lesni_plody')">🍓 Lesní plody</button>
         </div>
     </div>
 
@@ -186,6 +187,13 @@
             { img: "img/vlastovka-obecna.jpg", options: ["Jiřička obecná", "Vlaštovka obecná", "Rorýs obecný", "Lejsek šedý"], correct: 1 },
             { img: "img/strakapoud-velky.jpg", options: ["Strakapoud velký", "Žluna zelená", "Brhlík lesní", "Šoupálek krátkoprstý"], correct: 0 },
             { img: "img/vyr-velky.jpg", options: ["Puštík obecný", "Kalous ušatý", "Sýček obecný", "Výr velký"], correct: 3 }
+        ],
+        lesni_plody: [
+            { img: "https://loremflickr.com/400/300/blueberry,fruit", options: ["Borůvka", "Černý rybíz", "Ostružina", "Bezinka"], correct: 0 },
+            { img: "https://loremflickr.com/400/300/raspberry", options: ["Ostružina", "Malina", "Jahoda", "Šípek"], correct: 1 },
+            { img: "https://loremflickr.com/400/300/wild,strawberry", options: ["Malina", "Klikva", "Jahoda lesní", "Moruše"], correct: 2 },
+            { img: "https://loremflickr.com/400/300/blackberry", options: ["Borůvka", "Černý rybíz", "Ostružiny", "Malina"], correct: 2 },
+            { img: "https://loremflickr.com/400/300/cherry", options: ["Višně", "Třešně", "Trnky", "Jeřabiny"], correct: 1 }
         ]
     };
 
